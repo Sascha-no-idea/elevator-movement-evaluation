@@ -96,8 +96,21 @@ end
 
 function vel_by_acc(data::Measurement)
     acc_and_vel = data.acc_and_vel
-    velocities = cumsum(acc_and_vel[1:end-1, 4] .* acc_and_vel[1:end-1, 3])
+    times = data.acc_and_vel[2:end, 1]-data.acc_and_vel[1:end-1, 1]
+    velocities = cumsum(acc_and_vel[1:end-1, 4] .* times)
     acc_and_vel[1:end-1, 5] = velocities
+    result = Measurement(
+        acc_and_vel,
+        data.prs_and_vel
+        )
+    return result
+end
+
+function dist_by_vel(data::Measurement)
+    acc_and_vel = data.acc_and_vel
+    times = data.acc_and_vel[2:end, 1]-data.acc_and_vel[1:end-1, 1]
+    distances = cumsum(acc_and_vel[1:end-1, 5] .* times)
+    acc_and_vel[1:end-1, 6] = distances
     result = Measurement(
         acc_and_vel,
         data.prs_and_vel
