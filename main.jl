@@ -2,6 +2,7 @@ using CSV
 using DataFrames
 using Statistics
 using Plots
+using Polynomials
 
 #floattoint(number::Number) = trunc(Int, number)
 
@@ -73,7 +74,7 @@ function noise_profile(data::Measurement, start::Number, stop::Number)
 end
 
 function calibrate(data::Measurement, offset::Number)
-    accelerations = data.acc_and_vel
+    accelerations = copy(data.acc_and_vel)
     accelerations[:, 2] .-= offset
     result = Measurement(
         accelerations,
@@ -83,9 +84,9 @@ function calibrate(data::Measurement, offset::Number)
 end
 
 function acc_by_jerk(data::Measurement)
-    times = data.acc_and_vel[2:end, 1]-data.acc_and_vel[1:end-1, 1]
-    accelerations = cumsum(data.acc_and_vel[1:end-1, 2] .* times)
-    acc_and_vel = data.acc_and_vel
+    acc_and_vel = copy(data.acc_and_vel)
+    times = acc_and_vel[2:end, 1] - acc_and_vel[1:end-1, 1]
+    accelerations = cumsum(acc_and_vel[1:end-1, 2] .* times)
     acc_and_vel[1:end-1, 3:4] = hcat(cumsum(times), accelerations)
     result = Measurement(
         acc_and_vel,
@@ -95,8 +96,8 @@ function acc_by_jerk(data::Measurement)
 end
 
 function vel_by_acc(data::Measurement)
-    acc_and_vel = data.acc_and_vel
-    times = data.acc_and_vel[2:end, 1]-data.acc_and_vel[1:end-1, 1]
+    acc_and_vel = copy(data.acc_and_vel)
+    times = acc_and_vel[2:end, 1] - acc_and_vel[1:end-1, 1]
     velocities = cumsum(acc_and_vel[1:end-1, 4] .* times)
     acc_and_vel[1:end-1, 5] = velocities
     result = Measurement(
@@ -107,8 +108,8 @@ function vel_by_acc(data::Measurement)
 end
 
 function dist_by_vel(data::Measurement)
-    acc_and_vel = data.acc_and_vel
-    times = data.acc_and_vel[2:end, 1]-data.acc_and_vel[1:end-1, 1]
+    acc_and_vel = copy(data.acc_and_vel)
+    times = acc_and_vel[2:end, 1] - acc_and_vel[1:end-1, 1]
     distances = cumsum(acc_and_vel[1:end-1, 5] .* times)
     acc_and_vel[1:end-1, 6] = distances
     result = Measurement(
