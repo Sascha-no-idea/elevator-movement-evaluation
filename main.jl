@@ -157,12 +157,19 @@ function integrate(data::DataSeries)
     return nothing
 end
 
-function run_all()
-    data = read_data_series(1)
-    zoom_and_grid(0, 10)
-    cut(data, 0, 2)
-    offset = sensor_noise(data, 0, 15)
-    apply_offset(data, offset)
-end
-
-run_all()
+# usage example (functions you may want to use)
+#=
+data = read_data_series(1)
+plot_stuff(data.accelerometer.jerk)
+save_figure("jerk_raw_data")
+zoom_and_grid(0, 10)
+cut(data, 0, 2)
+plot_stuff(data.accelerometer.jerk)
+offset = sensor_noise(data, 0, 15)
+apply_offset(data, offset)
+plot_stuff(data.accelerometer.jerk)
+integrate(data)
+plot_stuff(data.accelerometer.acceleration)
+plot_stuff(data.accelerometer.velocity)
+plot_stuff(data.accelerometer.position)
+=#
