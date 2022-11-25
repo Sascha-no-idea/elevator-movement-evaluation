@@ -135,11 +135,14 @@ function cut(data::DataSeries, start::Number, stop::Number)
     return nothing
 end
 
-function sensor_noise(data::DataSeries, start::Number, stop::Number)
+function sensor_noise_zone(data::DataSeries, boundaries::Tuple{Number, Number})
+    start, stop = boundaries
     start_idx, stop_idx = find_closest.(Ref(data.accelerometer.jerk.time), [start, stop])
     jerk = data.accelerometer.jerk.data[start_idx:stop_idx]
     return mean(jerk)
 end
+
+sensor_noise(data::DataSeries, bounds...) = mean(sensor_noise_zone(data, b) for b in bounds)
 
 function apply_offset(data::DataSeries, offset::Number)
     data.accelerometer.jerk.data .-= offset
