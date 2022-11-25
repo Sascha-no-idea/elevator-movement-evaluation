@@ -33,7 +33,6 @@ mutable struct Pressure
     data
     label::String
 end
-#using Polynomials
 
 mutable struct Accelerometer
     jerk::Jerk
@@ -75,7 +74,7 @@ function read_data_series(series::Int)
     return DataSeries(accelerometer, pressure_sensor)
 end
 
- # main functions
+# main functions
 save_figure(title::String) = savefig("./figures/$(title).svg")
 
 label_string(series::Jerk) = "Jerk [m/s^3]"
@@ -181,10 +180,6 @@ plot_stuff(data.accelerometer.acceleration)
 plot_stuff(data.accelerometer.velocity)
 plot_stuff(data.accelerometer.position)
 =#
-
-
-# TODO:
-# - rewrite sencor noise function to allow for multiple start and stop values
 
 # debug
 #=
