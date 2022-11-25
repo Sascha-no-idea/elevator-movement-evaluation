@@ -78,8 +78,6 @@ end
  # main functions
 save_figure(title::String) = savefig("./figures/$(title).svg")
 
-plot_series(series) = plot!(series.time, series.data)
-
 label_string(series::Jerk) = "Jerk [m/s^3]"
 label_string(series::Acceleration) = "Acc. [m/s^2]"
 label_string(series::Velocity) = "Vel. [m/s]"
@@ -91,7 +89,7 @@ function plot_stuff(series...)
     ylabels = []
     titles = []
     for s in series
-        fig = plot_series(s)
+        fig = plot!(s.time, s.data)
         fig.series_list[end][:label] = s.label
         if !(label_string(s) in ylabels)
             push!(ylabels, label_string(s))
