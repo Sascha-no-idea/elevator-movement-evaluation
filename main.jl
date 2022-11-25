@@ -133,14 +133,15 @@ function cut(data::DataSeries, start::Number, stop::Number)
     return nothing
 end
 
-function sensor_noise_zone(data::DataSeries, boundaries::Tuple{Number, Number})
-    start, stop = boundaries
-    start_idx, stop_idx = find_closest.(Ref(data.accelerometer.jerk.time), [start, stop])
-    jerk = data.accelerometer.jerk.data[start_idx:stop_idx]
+function sensor_noise(data::DataSeries, bounds...)
+    jerk = []
+    for b in bounds
+        start, stop = b
+        start_idx, stop_idx = find_closest.(Ref(data.accelerometer.jerk.time), [start, stop])
+        append!(jerk, data.accelerometer.jerk.data[start_idx:stop_idx])
+    end
     return mean(jerk)
 end
-
-sensor_noise(data::DataSeries, bounds...) = mean(sensor_noise_zone(data, b) for b in bounds)
 
 function apply_offset(data::DataSeries, offset::Number)
     data.accelerometer.jerk.data .-= offset
@@ -186,11 +187,13 @@ plot_stuff(data.accelerometer.position)
 # - rewrite sencor noise function to allow for multiple start and stop values
 
 # debug
+#=
 data = read_data_series(1)
 cut(data, 0, 2)
-offset = sensor_noise(data, 0, 15)
+offset = sensor_noise(data, (0, 15))
 apply_offset(data, offset)
 integrate(data)
 plot_stuff(data.accelerometer.jerk)
 plot_stuff(data.accelerometer.acceleration)
 zoom_and_grid(0, 10)
+=#
