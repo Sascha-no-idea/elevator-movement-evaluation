@@ -78,28 +78,31 @@ end
  # main functions
 save_figure(title::String) = savefig("./figures/$(title).svg")
 
-plot_series(series::Jerk) = plot!(series.time, series.data, title="Jerk", label=series.label, ylabel="Jerk [m/s^3]")
-plot_series(series::Acceleration) = plot!(series.time, series.data, title="Acceleration", label=series.label, ylabel="Acceleration [m/s^2]")
-plot_series(series::Velocity) = plot!(series.time, series.data, title="Velocity", label=series.label, ylabel="Velocity [m/s]")
-plot_series(series::Position) = plot!(series.time, series.data, title="Position", label=series.label, ylabel="Position [m]")
-plot_series(series::Pressure) = plot!(series.time, series.data, title="Pressure", label=series.label, ylabel="Pressure [Pa]")
+plot_series(series) = plot!(series.time, series.data)
+
+label_string(series::Jerk) = "Jerk [m/s^3]"
+label_string(series::Acceleration) = "Acc. [m/s^2]"
+label_string(series::Velocity) = "Vel. [m/s]"
+label_string(series::Position) = "Pos. [m]"
+label_string(series::Pressure) = "Prs. [Pa]"
 
 function plot_stuff(series...)
-    plot()
-    # check if the series are of the same type
-    if all(x -> typeof(x) == typeof(series[1]), series)
-        for s in series
-            display(plot_series(s))
+    fig = plot(xlabel="t in [s]")
+    ylabels = []
+    titles = []
+    for s in series
+        fig = plot_series(s)
+        fig.series_list[end][:label] = s.label
+        if !(label_string(s) in ylabels)
+            push!(ylabels, label_string(s))
         end
-        plot!(
-            lw=1,
-            grid=true,
-            xlabel="t in [s]",
-            size=(600, trunc(Int, sqrt(2)*600))
-        )
-    else
-        error("Series are not of the same type")
+        if !(typeof(s) in titles)
+            push!(titles, typeof(s))
+        end
     end
+    yaxis!(join(ylabels, " / "))
+    title!(join(string.(titles), " / "))
+    display(fig)
     return nothing
 end
 
@@ -150,10 +153,13 @@ function integrate(data::DataSeries)
     # calculate the acceleration, velocity and position
     data.accelerometer.acceleration.data = integrate_series(data.accelerometer.jerk.data[1:end-1], Δt)
     data.accelerometer.acceleration.time = cumsum(Δt)
+    data.accelerometer.acceleration.label = "calculated acceleration"
     data.accelerometer.velocity.data = integrate_series(data.accelerometer.acceleration.data, Δt)
     data.accelerometer.velocity.time = cumsum(Δt)
+    data.accelerometer.velocity.label = "calculated velocity"
     data.accelerometer.position.data = integrate_series(data.accelerometer.velocity.data, Δt)
     data.accelerometer.position.time = cumsum(Δt)
+    data.accelerometer.position.label = "calculated position"
     return nothing
 end
 
@@ -173,3 +179,17 @@ plot_stuff(data.accelerometer.acceleration)
 plot_stuff(data.accelerometer.velocity)
 plot_stuff(data.accelerometer.position)
 =#
+
+
+# TODO:
+# - rewrite sencor noise function to allow for multiple start and stop values
+
+# debug
+data = read_data_series(1)
+cut(data, 0, 2)
+offset = sensor_noise(data, 0, 15)
+apply_offset(data, offset)
+integrate(data)
+plot_stuff(data.accelerometer.jerk)
+plot_stuff(data.accelerometer.acceleration)
+zoom_and_grid(0, 10)
